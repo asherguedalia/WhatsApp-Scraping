@@ -2,8 +2,9 @@
 Importing the libraries that we are going to use
 for loading the settings file and scraping the website
 """
-
+import os
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import (NoSuchElementException,
                                         StaleElementReferenceException)
 from selenium.webdriver.common.by import By
@@ -34,9 +35,15 @@ class WhatsappScrapper():
         elif self.browser == 'chrome':
             chrome_options = webdriver.ChromeOptions()
             if self.browser_path:
+                print('here!!!', self.browser_path)
+                files = os.listdir(self.browser_path)
+                for f in files:
+                    if 'chrome' in f:
+                        print(f)
                 chrome_options.add_argument('user-data-dir=' +
                                             self.browser_path)
-            driver = webdriver.Chrome(options=chrome_options)
+            # driver = webdriver.Chrome(options=chrome_options)
+            driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
         elif self.browser == 'safari':
             pass
         elif self.browser == 'edge':
@@ -82,8 +89,11 @@ class WhatsappScrapper():
         """
         Reading the last message that you got in from the chatter
         """
+        text_list = self.driver.find_element_by_class_name('copyable-text')
+        print('text list', text_list)
         for messages in self.driver.find_elements_by_xpath(
                 "//div[contains(@class,'message-in')]"):
+            print('in for loop')
             try:
                 message = ""
                 emojis = []
@@ -101,6 +111,7 @@ class WhatsappScrapper():
                     emojis.append(emoji.get_attribute("data-plain-text"))
 
             except NoSuchElementException:  # In case there are only emojis in the message
+                print('maybe only emojis')
                 try:
                     message = ""
                     emojis = []
@@ -112,6 +123,7 @@ class WhatsappScrapper():
                     ):
                         emojis.append(emoji.get_attribute("data-plain-text"))
                 except NoSuchElementException:
+                    print('nope no element')
                     pass
 
         return message, emojis
