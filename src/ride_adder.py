@@ -118,6 +118,13 @@ def ride_adder(name, time_stamp, phone_number, msg):
     print(phone_number)
     print(msg)
 
+    if len(msg) > 50:
+        print('not adding msg too long')
+        return False
+    if len(msg) < 5:
+        print('not adding msg too short')
+        return False
+
     now = datetime.datetime.now()
 
     from_loc = get_from_location(group_id, msg)
@@ -140,6 +147,7 @@ def ride_adder(name, time_stamp, phone_number, msg):
 
     # headers = {'content-type': 'application/json'}
 
+    print('adding this ride in ')
     try:
         r = requests.post(url, json=body, auth=(EMPTY_ID_TOKEN, ''))
     except Exception:
