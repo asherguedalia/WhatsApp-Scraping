@@ -3,6 +3,8 @@ Importing the libraries that we are going to use
 for loading the settings file and scraping the website
 """
 import os
+import time
+import random
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import (NoSuchElementException,
@@ -51,48 +53,82 @@ class WhatsappScrapper():
 
         return driver
 
-    def open_conversation(self, name):
+    def open_conversation(self, names):
         """
         Function that search the specified user by the 'name' and opens the conversation.
         """
-        print('trying to open convo with name', name)
+        print('scraping messages with groups who contain', names)
         while True:
-            for chatter in self.driver.find_elements_by_xpath("//div[@id='pane-side']/div/div/div/div"):
-                print('in for loop', chatter.text)
-                chatter_path = ".//span[@title='{}']".format(
-                    name)
+            try:
+                for chatter in self.driver.find_elements_by_xpath("//div[@id='pane-side']/div/div/div/div"):
+                    #print('in for loop', chatter.text)
 
-                # Wait until the chatter box is loaded in DOM
-                try:
-                    WebDriverWait(self.driver, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH, "//span[contains(@title,'{}')]".format(
-                                name)))
-                    )
-                except StaleElementReferenceException:
-                    WebDriverWait(self.driver, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH, "//span[contains(@title,'{}')]".format(
-                                name)))
-                    )
+                    for name in names:
 
-                try:
-                    print('trying this!', chatter.text)
-                    chatter_name = chatter.find_element_by_xpath(
-                        chatter_path).text
-                    if chatter_name == name:
-                        print('here in chatter 1')
-                        print(chatter_name, name)
-                        chatter.find_element_by_xpath(
-                            ".//div/div").click()
-                        return True
-                    else:
-                        print('here in chatter 2')
-                        print(chatter_name, name)
+                        if name in chatter.text:
+                            lines = chatter.text.split('\n')
+                            if len(lines) > 3:
+                                print('Group Name: ', lines[0])
+                                group_name = lines[0]
+                                time_stamp = lines[1]
+                                sender_number = lines[2]
 
-                except Exception as e:
-                    print('found error', e)
-                    return False
+                                print('Time of last message: ', lines[1])
+                                print('Sender Number: ', lines[2])
+
+                                msg = ''.join(lines[3:])
+                                print(msg)
+
+                            else:
+                                print('lines', lines)
+                            time.sleep(random.randint(5, 10))
+
+            except StaleElementReferenceException:
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, "//span[contains(@title,'{}')]".format(
+                            name)))
+                )
+
+
+
+                # #### todo - probably will need to teach it to scroll to find more contacts if they dont appear ### actually not cuz if its a new chat it will show up
+                # if name not in chatter.text:
+                #     continue
+                # # chatter_path = ".//span[@title='{}']".format(name)
+                # chatter_path = "//span[contains(@title,'{}')]".format(name)
+                #
+                # # Wait until the chatter box is loaded in DOM
+                # try:
+                #     WebDriverWait(self.driver, 10).until(
+                #         EC.presence_of_element_located(
+                #             (By.XPATH, "//span[contains(@title,'{}')]".format(
+                #                 name)))
+                #     )
+                # except StaleElementReferenceException:
+                #     WebDriverWait(self.driver, 10).until(
+                #         EC.presence_of_element_located(
+                #             (By.XPATH, "//span[contains(@title,'{}')]".format(
+                #                 name)))
+                #     )
+                #
+                # try:
+                #     print('trying this!', chatter.text)
+                #     chatter_name = chatter.find_element_by_xpath(
+                #         chatter_path).text
+                #     if chatter_name == name:
+                #         print('here in chatter 1')
+                #         print(chatter_name, name)
+                #         chatter.find_element_by_xpath(
+                #             ".//div/div").click()
+                #         return True
+                #     else:
+                #         print('here in chatter 2')
+                #         print(chatter_name, name)
+                #
+                # except Exception as e:
+                #     print('found error', e)
+                #     return False
 
     def read_last_in_message(self):
         """
