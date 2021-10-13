@@ -1,6 +1,9 @@
 import pandas as pd
 import datetime
+import requests
+import json
 
+EMPTY_ID_TOKEN = 'eyJhbGciOiJIUzUxMiIsImlhdCI6MTYzNDEyNjE0NCwiZXhwIjo1MjM0MTI2MTQ0fQ.eyJpZCI6InRlc3RlciJ9.9qYZEb-NUwbv3jGclcG7QLhhjqhtlOcRGgW3Ixk2U2cCe390Jdu7os94dVPzDirkpuEhBhM7pidhAVwIEG5JWg'
 JERUSALEM = 'Jerusalem'
 BEIT_SHEMESH = 'Beit Shemesh'
 GIVAT_SMHUEL = 'Givat Shmuel'
@@ -66,11 +69,17 @@ def to_dest(group_id, msg):
 def get_phone_number(number):
     number = number.replace(' ', '').replace('-', '')
     if number[0] != '+' or len(number) < 8:
+        print('no + -->', number)
         return False
-    for i in range(len(number)):
+    for i in range(1, len(number)):
         if not number[i].isdigit():
+            print('some non digits', number)
             return False
-    return number
+
+    if '+972' not in number:
+        print('TODO!! handle also non insrael whatsapps')
+        return False
+    return number[4:]
 
 
 def get_is_driver(msg):
@@ -117,13 +126,27 @@ def ride_adder(name, time_stamp, phone_number, msg):
     room = ''
     hours = now.hour
     minutes = now.minute
-    text = msg
+    text = 'x x ' + msg
+    flexible = get_flex(msg)
     number = get_phone_number(phone_number)
     if not number:
         print('bad number')
         return False
     date = datetime.datetime.today().strftime('%Y-%m-%d')
 
+    url = 'https://lamula.azurewebsites.net/add_ride'
+    body = {'driving': driving, 'date': date, 'hours': hours, 'minutes': minutes, 'from': from_loc, 'toDest': to_dest,
+     'room': room, 'text': text, 'friendNumber': number, 'selectedGrpId': group_id, 'flex': flexible}
+
+    # headers = {'content-type': 'application/json'}
+
+    try:
+        r = requests.post(url, json=body, auth=(EMPTY_ID_TOKEN, ''))
+    except Exception:
+        print('server error')
+        return False
+
+    print('Added!')
     return True
 
 
