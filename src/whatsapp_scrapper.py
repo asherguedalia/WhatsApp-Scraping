@@ -13,6 +13,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from ride_adder import ride_adder
+
 
 class WhatsappScrapper():
     def __init__(self, page, browser, browser_path):
@@ -68,20 +70,18 @@ class WhatsappScrapper():
                         if name in chatter.text:
                             lines = chatter.text.split('\n')
                             if len(lines) > 3:
-                                print('Group Name: ', lines[0])
+
                                 group_name = lines[0]
                                 time_stamp = lines[1]
                                 sender_number = lines[2]
-
-                                print('Time of last message: ', lines[1])
-                                print('Sender Number: ', lines[2])
-
                                 msg = ''.join(lines[3:])
-                                print(msg)
+
+                                ride_adder(group_name, time_stamp, sender_number, msg)
 
                             else:
                                 print('lines', lines)
-                            time.sleep(random.randint(5, 10))
+                            print('------------')
+                            time.sleep(random.randint(15, 20))
 
             except StaleElementReferenceException:
                 WebDriverWait(self.driver, 10).until(

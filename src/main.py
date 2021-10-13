@@ -27,7 +27,7 @@ def load_settings():
 
 
 def loop_over_names(scrapper, settings):
-    names = ['בר אילן', 'טרמפים בית שמש ירושלים', 'גיאבן', 'פנקס']
+    names = ['בר אילן', 'טרמפים בית שמש ירושלים']
     prev_in_message = ['', '']
 
     while True:
